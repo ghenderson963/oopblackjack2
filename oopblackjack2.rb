@@ -125,18 +125,21 @@ class Dealer < Player
   attr_accessor :total_deck
 
   def initialize
-    puts "Hi, I'm the dealer"
-    puts "How many decks do you want to play with?"
-  def create_deck(deck_count)
-    @number_of_decks = deck_count
-
+    begin
+      system "clear"
+      puts "Hi, I'm the dealer"
+      puts "How many decks do you want to play with?"
+      @deck_count = gets.chomp.to_i
+    end while @deck_count == 0
   end
 
+
+
   def build_decks
-    puts "Building #{@number_of_decks} decks."
+    puts "Building #{@deck_count} decks."
     count = 1
     @total_deck = Deck.new
-    while count < @number_of_decks
+    while count < @deck_count
       full_deck1 = Deck.new
 
 
@@ -147,9 +150,9 @@ class Dealer < Player
   end
 
    def scramble
-    @deck.shuffle!
-    @deck.reverse!
-    @deck.shuffle!
+    @total_deck.shuffle!
+    @total_deck.reverse!
+    @total_deck.shuffle!
   end
 
 
@@ -187,16 +190,11 @@ class Game
   end
 
 def play
-  system "clear"
-  puts "Hi welcome to Blackjack!"
-  dealer = Dealer.new
-
-  dealer.create_deck(2)
-  dealer.build_decks
+  @dealer.build_decks
   get_player_name
   system "clear"
   puts "Blackjack is the game!"
-  @deck.scramble
+  @dealer.scramble
   2.times do
     @hash_of_players.each do |k,player|
       player.hand.add_card(@deck.deal)
