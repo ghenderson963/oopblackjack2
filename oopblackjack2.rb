@@ -124,7 +124,7 @@ end
 class Dealer < Player
   attr_accessor :total_deck
 
-  def initialize
+  def  get_deck_count
     begin
       system "clear"
       puts "Hi, I'm the dealer"
@@ -157,7 +157,7 @@ class Dealer < Player
 
 
   def deal
-   @deck_of_cards.pop
+   @total_deck.pop
   end
 
 def dealer_turn
@@ -190,6 +190,7 @@ class Game
   end
 
 def play
+  @dealer.get_deck_count
   @dealer.build_decks
   get_player_name
   system "clear"
@@ -197,7 +198,7 @@ def play
   @dealer.scramble
   2.times do
     @hash_of_players.each do |k,player|
-      player.hand.add_card(@deck.deal)
+      player.hand.add_card(@dealer.deal)
     end
   end
 
@@ -211,7 +212,7 @@ def play
   end
   puts "dealers turn"
   2.times do
-    @dealer.hand.add_card(@deck.deal)
+    @dealer.hand.add_card(@dealer.deal)
   end
   @dealer.hand.to_s
   dealer_turn
@@ -239,7 +240,7 @@ end
         puts " "
         break
       end
-       @player.hand.add_card(@deck.deal)
+       @player.hand.add_card(@dealer.deal)
       if @player.hand.total_card_value == 21
         puts "Blackjack! #{@player} wins!"
         list_hands
