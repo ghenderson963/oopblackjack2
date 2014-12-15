@@ -128,51 +128,36 @@ class Dealer < Player
     end while @deck_count == 0
   end
 
-
-
   def build_decks
     puts "Building #{@deck_count} decks."
     count = 1
-
     @total_deck = Deck.new
     while count <= @deck_count
       full_deck1 = Deck.new
-
       @total_deck = mix_decks(full_deck1)
       count = count + 1
     end
     total_deck.count
   end
 
-   def scramble
+  def scramble
     @total_deck.shuffle!
     @total_deck.reverse!
     @total_deck.shuffle!
   end
 
-
   def deal
    @total_deck.pop
   end
 
-def dealer_turn
+  private
 
-
-end
-
-private
-
-def mix_decks(deck_to_be_added)
-  deck_to_be_added.deck_of_cards.each do |card|
-    puts card
-    @total_deck.add_card(card)
+  def mix_decks(deck_to_be_added)
+    deck_to_be_added.deck_of_cards.each do |card|
+      puts card
+      @total_deck.add_card(card)
+    end
   end
-end
-
-
-
-
-
 end
 
 class Game
@@ -186,87 +171,53 @@ class Game
 
 def play
   begin
-  @dealer.get_deck_count
-  @dealer.build_decks
-  @dealer.scramble
-
-  get_player_name
-  system "clear"
-  puts "Blackjack is the game!"
-  @dealer.scramble
-  2.times do
-    @hash_of_players.each do |k,player|
-      player.hand.add_card(@dealer.deal)
+    @dealer.get_deck_count
+    @dealer.build_decks
+    @dealer.scramble
+    get_player_name
+    system "clear"
+    puts "Blackjack is the game!"
+    @dealer.scramble
+    2.times do
+      @hash_of_players.each do |k,player|
+        player.hand.add_card(@dealer.deal)
+      end
     end
-  end
-
-  list_hands
-  puts "#{@hash_of_players[0]} is first "
-  @player = @hash_of_players[0]
-  while @count < @hash_of_players.length
-    hit_or_stay
-    switch_players
-  end
-  puts "dealers turn"
-  2.times do
-    @dealer.hand.add_card(@dealer.deal)
-  end
-  @dealer.hand.to_s
-  dealer_turn
-  @hash_of_players.each do |_,player|
-    if player.hand.total_card_value > 21
-      list_hands
-      puts "Busted #{player} loses"
-    elsif @dealer.hand.total_card_value > 21
-      list_hands
-      puts "#{player} you win!  The dealer busted!"
-    elsif player.hand.total_card_value > @dealer.hand.total_card_value
-      list_hands
-      puts "#{player} you win!"
-    elsif player.hand.total_card_value < @dealer.hand.total_card_value
-      list_hands
-      puts "#{player} you lose!"
-    elsif player.hand.total_card_value == @dealer.hand.total_card_value
-      list_hands
-      puts "#{player} you and the dealer tied!  No winner!"
+    list_hands
+    puts "#{@hash_of_players[0]} is first "
+    @player = @hash_of_players[0]
+    while @count < @hash_of_players.length
+      hit_or_stay
+      switch_players
     end
-  end
+    puts "dealers turn"
+    2.times do
+      @dealer.hand.add_card(@dealer.deal)
+    end
+    @dealer.hand.to_s
+    puts " "
+    dealer_turn
+    @hash_of_players.each do |_,player|
+      if player.hand.total_card_value > 21
+        list_hands
+        puts "#{player} Busted! #{player} loses"
+      elsif @dealer.hand.total_card_value > 21
+        list_hands
+        puts "#{player} you win!  The dealer busted!"
+      elsif player.hand.total_card_value > @dealer.hand.total_card_value
+        list_hands
+        puts "#{player} you win!"
+      elsif player.hand.total_card_value < @dealer.hand.total_card_value
+        list_hands
+        puts "#{player} you lose!"
+      elsif player.hand.total_card_value == @dealer.hand.total_card_value
+        list_hands
+        puts "#{player} you and the dealer tied!  No winner!"
+      end
+    end
     puts "Would you like to player again? (Y)es or (N)o"
     play_again = gets.chomp
   end while play_again == 'y'
-
-#     puts "For a total of #{player_total_count}"
-#     announce_dealer_cards(dealer_hand)
-#     puts "For a total of #{dealer_total_count}"
-#     puts "You Busted! Sorry you lose!"
-#   elsif dealer_total_count > 21
-#     announce_player_cards(player_hand)
-#     puts "For a total of #{player_total_count}"
-#     announce_dealer_cards(dealer_hand)
-#     puts "For a total of #{dealer_total_count}"
-#     puts "You win! The dealer busted!"
-#   elsif player_total_count > dealer_total_count
-#     announce_player_cards(player_hand)
-#     puts "For a total of #{player_total_count}"
-#     announce_dealer_cards(dealer_hand)
-#     puts "For a total of #{dealer_total_count}"
-#     puts "You Win!"
-#   elsif player_total_count < dealer_total_count
-#     announce_player_cards(player_hand)
-#     puts "For a total of #{player_total_count}"
-#     announce_dealer_cards(dealer_hand)
-#     puts "For a total of #{dealer_total_count}"
-#     puts "Dealer Wins!"
-#   else player_total_count == dealer_total_count
-#     announce_player_cards(player_hand)
-#     puts "For a total of #{player_total_count}"
-#     announce_dealer_cards(dealer_hand)
-#     puts "For a total of #{dealer_total_count}"
-#     puts "Tie so BORING!"
-#   end
-#   puts "Would you like to play again?  (Y)es or (N)o"
-#   play_again = gets.chomp
-# end while play_again == 'y'
 end
 
 def switch_players
@@ -289,7 +240,7 @@ end
         puts " "
         break
       end
-       @player.hand.add_card(@dealer.deal)
+      @player.hand.add_card(@dealer.deal)
       if @player.hand.total_card_value == 21
         puts "Blackjack! #{@player} wins!"
         list_hands
@@ -306,8 +257,7 @@ end
       system "clear"
       list_hands
     end
-end
-
+  end
 end
 
 def list_hands
@@ -321,7 +271,6 @@ def list_hands
   end
 end
 
-
 def get_player_name
   begin
     puts "how many players are going to play?  Chose 1-4"
@@ -333,12 +282,6 @@ def get_player_name
       @hash_of_players[num] = Player.new
       @hash_of_players[num].name = "#{players_name}"
     end
-end
-
-def choose_who_goes_first
-  count_of_players = @hash_of_players.length
-  player_number = @hash_of_players.keys.sample
-  @player = @hash_of_players[player_number]
 end
 
 def remove_player
@@ -367,6 +310,5 @@ end
       puts "The dealer stays. "
      end
     end
-
 
 new_game = Game.new.play
