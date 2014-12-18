@@ -1,40 +1,38 @@
 require "pry"
 
 class Deck
-  attr_accessor :count, :deck_of_cards
+  attr_accessor :deck_of_cards
 
   def initialize
-    @deck_of_cards = []
+    self.deck_of_cards = []
     suit = ["spades", "diamonds", "clubs", "hearts"]
     rank = ['2','3','4','5','6','7','8','9','jack','queen','king','ace']
     array_of_suit_rank_pairs = []
     array_of_suit_rank_pairs = suit.product(rank)
     count = 0
     array_of_suit_rank_pairs.each do |array|
-      @deck_of_cards[count] = Card.new(array[0],array[1])
+      self.deck_of_cards[count] = Card.new(array[0],array[1])
       count = count + 1
     end
   end
 
-
   def scramble
-    @deck_of_cards.shuffle!
-    @deck_of_cards.reverse!
-    @deck_of_cards.shuffle!
+    self.deck_of_cards.shuffle!
+    self.deck_of_cards.reverse!
+    self.deck_of_cards.shuffle!
   end
 
   def deal
-   @deck_of_cards.pop
+   self.deck_of_cards.pop
   end
 
   def add_card(card_to_add)
-    count = @deck_of_cards.length
-    @deck_of_cards[count ] = card_to_add
+    self.deck_of_cards << card_to_add
   end
 
   def to_s
     count = 0
-    @deck_of_cards.each do |card|
+    self.deck_of_cards.each do |card|
       count = count + 1
       puts "Card number #{count} is a #{card.rank} of #{card.suit} "
     end
@@ -45,20 +43,20 @@ class Hand
   attr_accessor :hand_array
 
   def initialize
-    @hand_array = []
+    self.hand_array = []
     @number_of_cards = @hand_array.count
   end
 
   def add_card(card)
-    @hand_array.push(card)
+    self.hand_array.push(card)
   end
 
   def total_card_value
     total = 0
-    @hand_array.each do |card|
+    self.hand_array.each do |card|
       total += card.value(card.rank).to_i
     end
-    @hand_array.select { |card| card.value(card.rank) == 11 }.count.times do
+    self.hand_array.select { |card| card.value(card.rank) == 11 }.count.times do
       if total > 21
         total -= 10
       end
@@ -68,7 +66,7 @@ end
 
   def to_s
     hand_total = 0
-    @hand_array.each do |card|
+    self.hand_array.each do |card|
       puts "#{card.rank} of #{card.suit}"
     end
     hand_total += total_card_value
@@ -81,23 +79,23 @@ class Card
   attr_accessor :rank, :suit, :value
 
   def initialize(suit, rank)
-  @suit = suit
-  @rank = rank
-  @value = value(rank)
+  self.suit = suit
+  self.rank = rank
+  self.value = value(rank)
   end
 
   def value(rank)
     if rank == "ace"
-      @value = 11
+      self.value = 11
     elsif rank.to_i == 0
-      @value = 10
+      self.value = 10
     else
-      @value = rank
+      self.value = rank
     end
   end
 
   def to_s
-    puts "a #{@rank} of #{@suit}"
+    puts "a #{self.rank} of #{self.suit}"
   end
 
 end
@@ -107,9 +105,20 @@ class Player
   attr_accessor :name, :hand
 
   def initialize
-    @name = name
-    @hand = Hand.new
+    self.name = name
+    self.hand = Hand.new
+    @wallet = Wallet.new
   end
+
+def make_bet(bet)
+  @wallet.current_bet = bet
+  @wallet.total_cash = @wallet.total_cash - bet
+end
+
+def total_cash
+  @wallet.total_cash
+end
+
 
   def to_s
     name
@@ -131,23 +140,23 @@ class Dealer < Player
   def build_decks
     puts "Building #{@deck_count} decks."
     count = 1
-    @total_deck = Deck.new
+    self.total_deck = Deck.new
     while count <= @deck_count
       full_deck1 = Deck.new
-      @total_deck = mix_decks(full_deck1)
+      self.total_deck = mix_decks(full_deck1)
       count = count + 1
     end
     total_deck.count
   end
 
   def scramble
-    @total_deck.shuffle!
-    @total_deck.reverse!
-    @total_deck.shuffle!
+    self.total_deck.shuffle!
+    self.total_deck.reverse!
+    self.total_deck.shuffle!
   end
 
   def deal
-   @total_deck.pop
+   self.total_deck.pop
   end
 
   private
@@ -155,9 +164,49 @@ class Dealer < Player
   def mix_decks(deck_to_be_added)
     deck_to_be_added.deck_of_cards.each do |card|
       puts card
-      @total_deck.add_card(card)
+      self.total_deck.add_card(card)
     end
   end
+end
+
+
+class Wallet
+attr_accessor :total_cash, :current_bet
+
+def initialize
+self.total_cash = 2500
+self.current_bet = 0
+end
+
+
+
+
+
+
+  end
+
+class Bank
+
+  def initialize
+    @bank_money = 10000000
+  end
+
+def take_bets
+
+
+end
+
+def payout_winners
+
+
+end
+
+def take_money_losers
+
+
+end
+
+
 end
 
 class Game
@@ -178,15 +227,20 @@ def play
     system "clear"
     puts "Blackjack is the game!"
     @dealer.scramble
+
     2.times do
       @hash_of_players.each do |k,player|
         player.hand.add_card(@dealer.deal)
       end
     end
-    list_hands
+
+    # list_hands
     puts "#{@hash_of_players[0]} is first "
     @player = @hash_of_players[0]
+
     while @count < @hash_of_players.length
+      place_bet
+      list_hands
       hit_or_stay
       switch_players
     end
@@ -286,6 +340,17 @@ end
 
 def remove_player
   @hash_of_players.delete_if{ |key, value| key == "#{@player}"}
+end
+
+def place_bet
+  bet_amount = 0
+  begin
+    puts "You have #{@player.total_cash}"
+    puts "How much would you like to bet #{@player}?"
+    bet_amount = gets.chomp.to_i
+    binding.pry
+  end while bet_amount > @player.total_cash
+   @player.make_bet(bet_amount)
 end
 
   def dealer_turn
