@@ -73,6 +73,11 @@ end
     puts "for a total of #{hand_total}"
   end
 
+  def remove_cards
+    self.hand_array = []
+
+  end
+
 end
 
 class Card
@@ -163,7 +168,7 @@ class Dealer < Player
 
   def mix_decks(deck_to_be_added)
     deck_to_be_added.deck_of_cards.each do |card|
-      puts card
+
       self.total_deck.add_card(card)
     end
   end
@@ -219,18 +224,25 @@ class Game
   end
 
 def play
+  get_player_name
+
   begin
+
     @dealer.get_deck_count
     @dealer.build_decks
     @dealer.scramble
-    get_player_name
     system "clear"
     puts "Blackjack is the game!"
     @dealer.scramble
 
+    @hash_of_players.each { |_,player| place_bet(player) }
+    @hash_of_players.each { |_,player| binding.pry player.hand.remove_cards }
+
+
     2.times do
       @hash_of_players.each do |k,player|
         player.hand.add_card(@dealer.deal)
+binding.pry
       end
     end
 
@@ -239,7 +251,6 @@ def play
     @player = @hash_of_players[0]
 
     while @count < @hash_of_players.length
-      place_bet
       list_hands
       hit_or_stay
       switch_players
@@ -342,16 +353,16 @@ def remove_player
   @hash_of_players.delete_if{ |key, value| key == "#{@player}"}
 end
 
-def place_bet
+def place_bet(player)
   bet_amount = 0
   begin
-    puts "You have #{@player.total_cash}"
-    puts "How much would you like to bet #{@player}?"
+    puts "You have #{player.total_cash}"
+    puts "How much would you like to bet #{player}?"
     bet_amount = gets.chomp.to_i
-    binding.pry
-  end while bet_amount > @player.total_cash
-   @player.make_bet(bet_amount)
+  end while bet_amount > player.total_cash
+   player.make_bet(bet_amount)
 end
+
 
   def dealer_turn
     if @dealer.hand.total_card_value == 21
