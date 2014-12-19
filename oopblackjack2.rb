@@ -107,12 +107,13 @@ end
 
 
 class Player
-  attr_accessor :name, :hand
+  attr_accessor :name, :hand, :bet
 
   def initialize
     self.name = name
     self.hand = Hand.new
     @wallet = Wallet.new
+    self.bet = 0
   end
 
 def make_bet(bet)
@@ -122,6 +123,16 @@ end
 
 def total_cash
   @wallet.total_cash
+end
+
+def settle_bet(win)
+  binding.pry
+  if win
+    @wallet.total_cash = @wallet.total_cash + self.bet
+  else
+    @wallet.total_cash = @wallet.total_cash - self.bet
+  end
+
 end
 
 
@@ -234,15 +245,15 @@ def play
     system "clear"
     puts "Blackjack is the game!"
     @dealer.scramble
-
+binding.pry
     @hash_of_players.each { |_,player| place_bet(player) }
-    @hash_of_players.each { |_,player| binding.pry player.hand.remove_cards }
-
+    @hash_of_players.each { |_,player| player.hand.remove_cards }
+binding.pry
 
     2.times do
       @hash_of_players.each do |k,player|
         player.hand.add_card(@dealer.deal)
-binding.pry
+
       end
     end
 
@@ -265,18 +276,23 @@ binding.pry
     @hash_of_players.each do |_,player|
       if player.hand.total_card_value > 21
         list_hands
+        player.settle_bet(FALSE)
         puts "#{player} Busted! #{player} loses"
       elsif @dealer.hand.total_card_value > 21
         list_hands
+        player.settle_bet(TRUE)
         puts "#{player} you win!  The dealer busted!"
       elsif player.hand.total_card_value > @dealer.hand.total_card_value
         list_hands
+        player.settle_bet(TRUE)
         puts "#{player} you win!"
       elsif player.hand.total_card_value < @dealer.hand.total_card_value
         list_hands
+        player.settle_bet(FALSE)
         puts "#{player} you lose!"
       elsif player.hand.total_card_value == @dealer.hand.total_card_value
         list_hands
+        player.settle_bet(TRUE)
         puts "#{player} you and the dealer tied!  No winner!"
       end
     end
@@ -309,14 +325,14 @@ end
       if @player.hand.total_card_value == 21
         puts "Blackjack! #{@player} wins!"
         list_hands
-        remove_player
+        @player.settle_bet(TRUE)
         puts " "
         break
       elsif @player.hand.total_card_value > 21
         puts "Busted! #{@player} looses!"
         list_hands
         puts " "
-        remove_player
+        @player.settle_bet(FALSE)
         break
       end
       system "clear"
@@ -360,8 +376,10 @@ def place_bet(player)
     puts "How much would you like to bet #{player}?"
     bet_amount = gets.chomp.to_i
   end while bet_amount > player.total_cash
+  binding.pry
    player.make_bet(bet_amount)
 end
+
 
 
   def dealer_turn
