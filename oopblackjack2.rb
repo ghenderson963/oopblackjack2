@@ -23,7 +23,7 @@ class Deck
   end
 
   def deal
-   self.deck_of_cards.pop
+   self.deck_of_cards.deck_of_cards.pop
   end
 
   def add_card(card_to_add)
@@ -106,33 +106,36 @@ end
 
 
 class Player
-  attr_accessor :name, :hand, :bet
+  attr_accessor :name, :hand, :bet, :wallet
 
   def initialize
     self.name = name
     self.hand = Hand.new
-    @wallet = Wallet.new
+    self.wallet = Wallet.new
     self.bet = 0
+
   end
 
 def make_bet(bet)
-  @wallet.current_bet = bet
-  @wallet.total_cash = @wallet.total_cash - bet
+  self.wallet.current_bet = bet
+  self.wallet.total_cash = self.wallet.total_cash - bet
 end
 
 def total_cash
-  @wallet.total_cash
+  self.wallet.total_cash
 end
 
 def settle_bet(win)
 
   if win == "win"
-    @wallet.total_cash = @wallet.total_cash + self.bet
+    self.wallet.total_cash = self.wallet.total_cash + self.bet
   else
-    @wallet.total_cash = @wallet.total_cash - self.bet
+    self.wallet.total_cash = self.wallet.total_cash - self.bet
   end
 
 end
+
+
 
 
   def to_s
@@ -143,25 +146,26 @@ end
 class Dealer < Player
   attr_accessor :total_deck
 
-  def  get_deck_count
-    begin
-      system "clear"
-      puts "Hi, I'm the dealer"
-      puts "How many decks do you want to play with?"
-      @deck_count = gets.chomp.to_i
-    end while @deck_count == 0
-  end
+  # def  get_deck_count
+  #   begin
+  #     system "clear"
+  #     puts "Hi, I'm the dealer"
+  #     puts "How many decks do you want to play with?"
+  #     @deck_count = gets.chomp.to_i
+  #   end while @deck_count == 0
+  # end
 
   def build_decks
-    puts "Building #{@deck_count} decks."
+    puts "Building and shuffling decks."
     count = 1
     self.total_deck = Deck.new
-    while count <= @deck_count
-      full_deck1 = Deck.new
-      self.total_deck = mix_decks(full_deck1)
-      count = count + 1
-    end
-    total_deck.count
+
+    # while count <= @deck_count
+    #   full_deck1 = Deck.new
+    #   self.total_deck = mix_decks(full_deck1)
+    #   count = count + 1
+    # end
+    # total_deck.count
   end
 
   def scramble
@@ -171,17 +175,18 @@ class Dealer < Player
   end
 
   def deal
-   self.total_deck.pop
+
+   self.total_deck.deck_of_cards.pop
   end
 
   private
 
-  def mix_decks(deck_to_be_added)
-    deck_to_be_added.deck_of_cards.each do |card|
+  # def mix_decks(deck_to_be_added)
+  #   deck_to_be_added.deck_of_cards.each do |card|
 
-      self.total_deck.add_card(card)
-    end
-  end
+  #     self.total_deck.add_card(card)
+  #   end
+  # end
 end
 
 
@@ -193,6 +198,10 @@ self.total_cash = 2500
 self.current_bet = 0
 end
 
+def to_s
+  puts "You have #{total_cash} dollars"
+  puts "Your current bet is #{current_bet} dollars"
+end
 
 
 
@@ -226,11 +235,9 @@ end
 
 class Game
   def initialize
-    # @deck = Deck.new
     @hash_of_players = {}
-    @current_player = " "
     @dealer = Dealer.new
-    @count = 1
+    @count = 0
   end
 
 def play
@@ -238,72 +245,105 @@ def play
   get_player_name
 
   begin
-    @count = 1
-    @dealer.get_deck_count
+    puts " "
     @dealer.build_decks
-    @dealer.scramble
-    system "clear"
-    puts "Blackjack is the game!"
-    @dealer.scramble
 
-    @hash_of_players.each { |_,player| place_bet(player) }
+    @dealer.total_deck.scramble
+    puts " "
+    puts "Let's play Blackjack!"
+    puts " "
+    @hash_of_players.each { |_,player| place_bet(player)}
     @hash_of_players.each { |_,player| player.hand.remove_cards }
-
-
-
     2.times do
-      @hash_of_players.each do |k,player|
-        player.hand.add_card(@dealer.deal)
-
-      end
+      @hash_of_players.each { |_,player| player.hand.add_card(@dealer.deal) }
+      @dealer.hand.add_card(@dealer.deal)
     end
-binding.pry
-    # list_hands
-    puts "#{@hash_of_players[0]} is first "
+    system "clear"
+    puts "#{@hash_of_players[0]} is first."
     @player = @hash_of_players[0]
-
-    while @count <= @hash_of_players.length
-      list_hands
+    @hash_of_players.each do |_,player|
+      show_cards
       hit_or_stay
       switch_players
     end
-    system "clear"
-    puts "dealers turn"
-    @dealer.hand.remove_cards
-    2.times do
-      @dealer.hand.add_card(@dealer.deal)
-    end
-    puts "Dealer has:"
-    @dealer.hand.to_s
-    puts " "
-    dealer_turn
-    @hash_of_players.each do |_,player|
-      if player.hand.total_card_value > 21
-        list_hands
-        player.settle_bet(FALSE)
-        puts "#{player} Busted! #{player} loses"
-      elsif @dealer.hand.total_card_value > 21
-        list_hands
-        player.settle_bet("win")
-        puts "#{player} you win!  The dealer busted!"
-      elsif player.hand.total_card_value > @dealer.hand.total_card_value
-        list_hands
-        player.settle_bet("win")
-        puts "#{player} you win!"
-      elsif player.hand.total_card_value < @dealer.hand.total_card_value
-        list_hands
-        player.settle_bet(FALSE)
-        puts "#{player} you lose!"
-      elsif player.hand.total_card_value == @dealer.hand.total_card_value
-        list_hands
-        player.settle_bet("win")
-        puts "#{player} you and the dealer tied!  No winner!"
-      end
-    end
+
     puts "Would you like to player again? (Y)es or (N)o"
     play_again = gets.chomp
   end while play_again == 'y'
-end
+ end
+
+
+
+
+
+
+#   begin
+#     @count = 1
+#     @dealer.get_deck_count
+#     @dealer.build_decks
+#     @dealer.scramble
+#     system "clear"
+#     puts "Blackjack is the game!"
+#     @dealer.scramble
+
+#     @hash_of_players.each { |_,player| place_bet(player) }
+#     @hash_of_players.each { |_,player| player.hand.remove_cards }
+
+
+
+#     2.times do
+#       @hash_of_players.each do |k,player|
+#         player.hand.add_card(@dealer.deal)
+
+#       end
+#     end
+#     # list_hands
+#     puts "#{@hash_of_players[0]} is first "
+#     @player = @hash_of_players[0]
+
+#     while @count < @hash_of_players.length
+#      show_cards
+#       hit_or_stay
+#       switch_players
+
+#     end
+#     system "clear"
+#     puts "dealers turn"
+#     @dealer.hand.remove_cards
+#     2.times do
+#       @dealer.hand.add_card(@dealer.deal)
+#     end
+#     puts "Dealer has:"
+#     @dealer.hand.to_s
+#     puts " "
+#     dealer_turn
+#     @hash_of_players.each do |_,player|
+#       if player.hand.total_card_value > 21
+#         list_hands
+#         player.settle_bet(FALSE)
+#         puts "#{player} Busted! #{player} loses"
+#       elsif @dealer.hand.total_card_value > 21
+#         list_hands
+#         player.settle_bet("win")
+#         puts "#{player} you win!  The dealer busted!"
+#       elsif player.hand.total_card_value > @dealer.hand.total_card_value
+#         list_hands
+#         player.settle_bet("win")
+#         puts "#{player} you win!"
+#       elsif player.hand.total_card_value < @dealer.hand.total_card_value
+#         list_hands
+#         player.settle_bet(FALSE)
+#         puts "#{player} you lose!"
+#       elsif player.hand.total_card_value == @dealer.hand.total_card_value
+#         list_hands
+#         player.settle_bet("win")
+#         puts "#{player} you and the dealer tied!  No winner!"
+#       end
+#     end
+#     puts "Would you like to player again? (Y)es or (N)o"
+#     play_again = gets.chomp
+#   end while play_again == 'y'
+# end
 
 def switch_players
   @count = @count + 1
@@ -328,20 +368,20 @@ end
       @player.hand.add_card(@dealer.deal)
       if @player.hand.total_card_value == 21
         puts "Blackjack! #{@player} wins!"
-sleep(10)
-        list_hands
+sleep(3)
+        show_cards
         @player.settle_bet("win")
         puts " "
         break
       elsif @player.hand.total_card_value > 21
         puts "Busted! #{@player} looses!"
-        list_hands
+        show_cards
         puts " "
         @player.settle_bet(FALSE)
         break
       end
       system "clear"
-      list_hands
+      show_cards
     end
   end
 end
@@ -355,6 +395,18 @@ def list_hands
     puts " "
     num += 1
   end
+end
+
+def show_cards
+  binding.pry
+  puts "#{@player} has:"
+  @player.hand.to_s
+
+  @player.wallet.to_s
+  puts " "
+  puts "The dealer has:"
+  @dealer.hand.to_s
+  puts " "
 end
 
 def get_player_name
@@ -379,6 +431,7 @@ def place_bet(player)
   begin
     puts "You have #{player.total_cash}"
     puts "How much would you like to bet #{player}?"
+    puts " "
     bet_amount = gets.chomp.to_i
   end while bet_amount > player.total_cash
 
