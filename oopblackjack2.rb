@@ -106,19 +106,19 @@ end
 
 
 class Player
-  attr_accessor :name, :hand, :bet, :wallet
+  attr_accessor :name, :hand, :bet, :wallet, :current_bet
 
   def initialize
     self.name = name
     self.hand = Hand.new
     self.wallet = Wallet.new
     self.bet = 0
+    self.current_bet = 0
 
   end
 
 def make_bet(bet)
   self.wallet.current_bet = bet
-  self.wallet.total_cash = self.wallet.total_cash - bet
 end
 
 def total_cash
@@ -126,11 +126,11 @@ def total_cash
 end
 
 def settle_bet(win)
-
   if win == "win"
-    self.wallet.total_cash = self.wallet.total_cash + self.bet
+    self.wallet.total_cash = self.wallet.total_cash + self.wallet.current_bet
+    puts "You won #{self.wallet.current_bet}"
   else
-    self.wallet.total_cash = self.wallet.total_cash - self.bet
+    self.wallet.total_cash = self.wallet.total_cash - self.wallet.current_bet
   end
 
 end
@@ -247,7 +247,6 @@ def play
   begin
     system "clear"
     @dealer.build_decks
-
     @dealer.total_deck.scramble
     puts " "
     puts "Let's play Blackjack!"
@@ -272,10 +271,9 @@ def play
       choice = gets.chomp
       switch_players
     end
-
     system "clear"
     puts "Dealers turn!"
-     puts "Dealer has:"
+    puts "Dealer has:"
     @dealer.hand.to_s
     puts " "
     if @dealer.hand.total_card_value == 21
@@ -290,16 +288,9 @@ def play
       puts "For a total of #{@dealer.hand.total_card_value}"
       puts " "
       sleep(2)
-
     end
-
-
-
-
-
-
-    # dealer_turn
     @hash_of_players.each do |_,player|
+
       if player.hand.total_card_value > 21
         list_hands
         player.settle_bet(FALSE)
@@ -327,119 +318,42 @@ def play
   end while play_again == 'y'
 end
 
-
-
-
-
-
-
-
-
-#   begin
-#     @count = 1
-#     @dealer.get_deck_count
-#     @dealer.build_decks
-#     @dealer.scramble
-#     system "clear"
-#     puts "Blackjack is the game!"
-#     @dealer.scramble
-
-#     @hash_of_players.each { |_,player| place_bet(player) }
-#     @hash_of_players.each { |_,player| player.hand.remove_cards }
-
-
-
-#     2.times do
-#       @hash_of_players.each do |k,player|
-#         player.hand.add_card(@dealer.deal)
-
-#       end
-#     end
-#     # list_hands
-#     puts "#{@hash_of_players[0]} is first "
-#     @player = @hash_of_players[0]
-
-#     while @count < @hash_of_players.length
-#      show_cards
-#       hit_or_stay
-#       switch_players
-
-#     end
-#     system "clear"
-#     puts "dealers turn"
-#     @dealer.hand.remove_cards
-#     2.times do
-#       @dealer.hand.add_card(@dealer.deal)
-#     end
-#     puts "Dealer has:"
-#     @dealer.hand.to_s
-#     puts " "
-#     dealer_turn
-#     @hash_of_players.each do |_,player|
-#       if player.hand.total_card_value > 21
-#         list_hands
-#         player.settle_bet(FALSE)
-#         puts "#{player} Busted! #{player} loses"
-#       elsif @dealer.hand.total_card_value > 21
-#         list_hands
-#         player.settle_bet("win")
-#         puts "#{player} you win!  The dealer busted!"
-#       elsif player.hand.total_card_value > @dealer.hand.total_card_value
-#         list_hands
-#         player.settle_bet("win")
-#         puts "#{player} you win!"
-#       elsif player.hand.total_card_value < @dealer.hand.total_card_value
-#         list_hands
-#         player.settle_bet(FALSE)
-#         puts "#{player} you lose!"
-#       elsif player.hand.total_card_value == @dealer.hand.total_card_value
-#         list_hands
-#         player.settle_bet("win")
-#         puts "#{player} you and the dealer tied!  No winner!"
-#       end
-#     end
-#     puts "Would you like to player again? (Y)es or (N)o"
-#     play_again = gets.chomp
-#   end while play_again == 'y'
-# end
-
 def switch_players
   @count = @count + 1
   @player = @hash_of_players[@count]
 end
 
-  def hit_or_stay
-    while @player.hand.total_card_value < 21
-      puts "Would you like a HIT or would you like to STAY #{@player}?"
-      puts "Use the keyboard to type (H) for HIT or (S) to stay"
-      answer = gets.chomp.downcase
-      # system "clear"
-      if !["h", "s"].include?(answer)
-        puts "You must enter s or h"
-        next
-      end
-      if answer == "s"
-        puts "You choose to stay!"
-        puts " "
-        break
-      end
-      @player.hand.add_card(@dealer.deal)
-      if @player.hand.total_card_value == 21
-        puts "Blackjack! #{@player} wins!"
-sleep(3)
-        show_cards
-        @player.settle_bet("win")
-        puts " "
-        break
-      elsif @player.hand.total_card_value > 21
-        puts "Busted! #{@player} looses!"
-        show_cards
-        puts " "
-        @player.settle_bet(FALSE)
-        break
-      end
-      system "clear"
+def hit_or_stay
+  while @player.hand.total_card_value < 21
+    puts "Would you like a HIT or would you like to STAY #{@player}?"
+    puts "Use the keyboard to type (H) for HIT or (S) to stay"
+    answer = gets.chomp.downcase
+    if !["h", "s"].include?(answer)
+      puts "You must enter s or h"
+      next
+    end
+    if answer == "s"
+      puts "You choose to stay!"
+      puts " "
+      break
+    end
+    @player.hand.add_card(@dealer.deal)
+    if @player.hand.total_card_value == 21
+      puts "Blackjack! #{@player} wins!"
+      sleep(3)
       show_cards
+      @player.settle_bet("win")
+      puts " "
+      break
+    elsif @player.hand.total_card_value > 21
+      puts "Busted! #{@player} looses!"
+      show_cards
+      puts " "
+      @player.settle_bet(FALSE)
+      break
+    end
+    system "clear"
+    show_cards
     end
   end
 end
@@ -456,10 +370,8 @@ def list_hands
 end
 
 def show_cards
-
   puts "#{@player} has:"
   @player.hand.to_s
-
   @player.wallet.to_s
   puts " "
   puts "The dealer has:"
@@ -492,33 +404,7 @@ def place_bet(player)
     puts " "
     bet_amount = gets.chomp.to_i
   end while bet_amount > player.total_cash
-
    player.make_bet(bet_amount)
 end
-
-
-
-  # def dealer_turn
-  #   if @dealer.hand.total_card_value == 21
-  #     puts "Dealer has Blackjack!"
-  #   end
-  #   while @dealer.hand.total_card_value < 17
-  #     puts "The dealer hits!"
-  #     puts " "
-  #     @dealer.hand.add_card(@dealer.deal)
-  #     @dealer.hand.to_s
-  #     sleep(2)
-  #     if @dealer.hand.total_card_value == 21
-  #       puts "Dealer has Blackjack!  You lose."
-  #       puts " "
-  #       break
-  #     elsif  @dealer.hand.total_card_value > 21
-  #      puts "Dealer has busted! You win."
-  #      puts " "
-  #      break
-  #     end
-  #     puts "The dealer stays. "
-  #    end
-  #   end
 
 new_game = Game.new.play
