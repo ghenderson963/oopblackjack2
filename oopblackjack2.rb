@@ -76,7 +76,6 @@ end
   def remove_cards
     self.hand_array = []
   end
-
 end
 
 class Card
@@ -101,9 +100,7 @@ class Card
   def to_s
     puts "a #{self.rank} of #{self.suit}"
   end
-
 end
-
 
 class Player
   attr_accessor :name, :hand, :bet, :wallet, :current_bet
@@ -114,28 +111,23 @@ class Player
     self.wallet = Wallet.new
     self.bet = 0
     self.current_bet = 0
-
   end
 
-def make_bet(bet)
-  self.wallet.current_bet = bet
-end
-
-def total_cash
-  self.wallet.total_cash
-end
-
-def settle_bet(win)
-  if win == "win"
-    self.wallet.total_cash = self.wallet.total_cash + self.wallet.current_bet
-  else
-    self.wallet.total_cash = self.wallet.total_cash - self.wallet.current_bet
+  def make_bet(bet)
+    self.wallet.current_bet = bet
   end
 
-end
+  def total_cash
+    self.wallet.total_cash
+  end
 
-
-
+  def settle_bet(win)
+    if win == "win"
+      self.wallet.total_cash = self.wallet.total_cash + self.wallet.current_bet
+    else
+      self.wallet.total_cash = self.wallet.total_cash - self.wallet.current_bet
+    end
+  end
 
   def to_s
     name
@@ -236,9 +228,7 @@ def play
       sleep(2)
     end
     @hash_of_players.each do |_,player|
-
       if player.hand.total_card_value > 21
-
         player.settle_bet(FALSE)
         puts "#{player} Busted! #{player} loses"
       elsif @dealer.hand.total_card_value > 21
@@ -266,7 +256,6 @@ end
 
 def switch_players
   if @count < @hash_of_players.length
-    binding.pry
     @count = @count + 1
     @player = @hash_of_players[@count]
   end
@@ -304,17 +293,6 @@ def hit_or_stay
     system "clear"
     show_cards
     end
-  end
-end
-
-def list_hands
-  count = @hash_of_players.length
-  num = 0
-  count.times do
-    puts "#{@hash_of_players[num].name} has:"
-    @hash_of_players[num].hand.to_s
-    puts " "
-    num += 1
   end
 end
 
