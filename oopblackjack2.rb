@@ -128,7 +128,6 @@ end
 def settle_bet(win)
   if win == "win"
     self.wallet.total_cash = self.wallet.total_cash + self.wallet.current_bet
-    puts "You won #{self.wallet.current_bet}"
   else
     self.wallet.total_cash = self.wallet.total_cash - self.wallet.current_bet
   end
@@ -146,26 +145,10 @@ end
 class Dealer < Player
   attr_accessor :total_deck
 
-  # def  get_deck_count
-  #   begin
-  #     system "clear"
-  #     puts "Hi, I'm the dealer"
-  #     puts "How many decks do you want to play with?"
-  #     @deck_count = gets.chomp.to_i
-  #   end while @deck_count == 0
-  # end
-
   def build_decks
     puts "Building and shuffling decks."
     count = 1
     self.total_deck = Deck.new
-
-    # while count <= @deck_count
-    #   full_deck1 = Deck.new
-    #   self.total_deck = mix_decks(full_deck1)
-    #   count = count + 1
-    # end
-    # total_deck.count
   end
 
   def scramble
@@ -175,62 +158,23 @@ class Dealer < Player
   end
 
   def deal
-
    self.total_deck.deck_of_cards.pop
   end
-
-  private
-
-  # def mix_decks(deck_to_be_added)
-  #   deck_to_be_added.deck_of_cards.each do |card|
-
-  #     self.total_deck.add_card(card)
-  #   end
-  # end
 end
 
 
 class Wallet
-attr_accessor :total_cash, :current_bet
-
-def initialize
-self.total_cash = 2500
-self.current_bet = 0
-end
-
-def to_s
-  puts "You have #{total_cash} dollars"
-  puts "Your current bet is #{current_bet} dollars"
-end
-
-
-
-
-
-  end
-
-class Bank
+  attr_accessor :total_cash, :current_bet
 
   def initialize
-    @bank_money = 10000000
+    self.total_cash = 2500
+    self.current_bet = 0
   end
 
-def take_bets
-
-
-end
-
-def payout_winners
-
-
-end
-
-def take_money_losers
-
-
-end
-
-
+  def to_s
+    puts "You have #{total_cash} dollars"
+    puts "Your current bet is #{current_bet} dollars"
+  end
 end
 
 class Game
@@ -246,6 +190,7 @@ def play
 
   begin
     system "clear"
+    @count = 0
     @dealer.build_decks
     @dealer.total_deck.scramble
     puts " "
@@ -278,6 +223,7 @@ def play
     puts " "
     if @dealer.hand.total_card_value == 21
       puts "Dealer has Blackjack!"
+      puts " "
     end
     while @dealer.hand.total_card_value < 17
       puts "The dealer hits!"
@@ -292,23 +238,23 @@ def play
     @hash_of_players.each do |_,player|
 
       if player.hand.total_card_value > 21
-        list_hands
+
         player.settle_bet(FALSE)
         puts "#{player} Busted! #{player} loses"
       elsif @dealer.hand.total_card_value > 21
-        list_hands
+        # list_hands
         player.settle_bet("win")
         puts "#{player} you win!  The dealer busted!"
       elsif player.hand.total_card_value > @dealer.hand.total_card_value
-        list_hands
+        # list_hands
         player.settle_bet("win")
         puts "#{player} you win!"
       elsif player.hand.total_card_value < @dealer.hand.total_card_value
-        list_hands
+        # list_hands
         player.settle_bet(FALSE)
         puts "#{player} you lose!"
       elsif player.hand.total_card_value == @dealer.hand.total_card_value
-        list_hands
+        # list_hands
         player.settle_bet("win")
         puts "#{player} you and the dealer tied!  No winner!"
       end
@@ -319,8 +265,11 @@ def play
 end
 
 def switch_players
-  @count = @count + 1
-  @player = @hash_of_players[@count]
+  if @count < @hash_of_players.length
+    binding.pry
+    @count = @count + 1
+    @player = @hash_of_players[@count]
+  end
 end
 
 def hit_or_stay
