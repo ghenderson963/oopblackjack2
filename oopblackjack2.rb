@@ -232,19 +232,15 @@ def play
         player.settle_bet(FALSE)
         puts "#{player} Busted! #{player} loses"
       elsif @dealer.hand.total_card_value > 21
-        # list_hands
         player.settle_bet("win")
         puts "#{player} you win!  The dealer busted!"
       elsif player.hand.total_card_value > @dealer.hand.total_card_value
-        # list_hands
         player.settle_bet("win")
         puts "#{player} you win!"
       elsif player.hand.total_card_value < @dealer.hand.total_card_value
-        # list_hands
         player.settle_bet(FALSE)
         puts "#{player} you lose!"
       elsif player.hand.total_card_value == @dealer.hand.total_card_value
-        # list_hands
         player.settle_bet("win")
         puts "#{player} you and the dealer tied!  No winner!"
       end
