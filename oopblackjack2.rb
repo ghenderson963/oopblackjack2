@@ -245,7 +245,7 @@ def play
   get_player_name
 
   begin
-    puts " "
+    system "clear"
     @dealer.build_decks
 
     @dealer.total_deck.scramble
@@ -254,6 +254,7 @@ def play
     puts " "
     @hash_of_players.each { |_,player| place_bet(player)}
     @hash_of_players.each { |_,player| player.hand.remove_cards }
+    @dealer.hand.remove_cards
     2.times do
       @hash_of_players.each { |_,player| player.hand.add_card(@dealer.deal) }
       @dealer.hand.add_card(@dealer.deal)
@@ -262,15 +263,72 @@ def play
     puts "#{@hash_of_players[0]} is first."
     @player = @hash_of_players[0]
     @hash_of_players.each do |_,player|
+      system "clear"
       show_cards
       hit_or_stay
+      system "clear"
+      show_cards
+      puts "Hit Enter or Return to proceed"
+      choice = gets.chomp
       switch_players
     end
 
+    system "clear"
+    puts "Dealers turn!"
+     puts "Dealer has:"
+    @dealer.hand.to_s
+    puts " "
+    if @dealer.hand.total_card_value == 21
+      puts "Dealer has Blackjack!"
+    end
+    while @dealer.hand.total_card_value < 17
+      puts "The dealer hits!"
+      @dealer.hand.add_card(@dealer.deal)
+      sleep(1)
+      puts "The dealer gets:"
+      @dealer.hand.hand_array.last.to_s
+      puts "For a total of #{@dealer.hand.total_card_value}"
+      puts " "
+      sleep(2)
+
+    end
+
+
+
+
+
+
+    # dealer_turn
+    @hash_of_players.each do |_,player|
+      if player.hand.total_card_value > 21
+        list_hands
+        player.settle_bet(FALSE)
+        puts "#{player} Busted! #{player} loses"
+      elsif @dealer.hand.total_card_value > 21
+        list_hands
+        player.settle_bet("win")
+        puts "#{player} you win!  The dealer busted!"
+      elsif player.hand.total_card_value > @dealer.hand.total_card_value
+        list_hands
+        player.settle_bet("win")
+        puts "#{player} you win!"
+      elsif player.hand.total_card_value < @dealer.hand.total_card_value
+        list_hands
+        player.settle_bet(FALSE)
+        puts "#{player} you lose!"
+      elsif player.hand.total_card_value == @dealer.hand.total_card_value
+        list_hands
+        player.settle_bet("win")
+        puts "#{player} you and the dealer tied!  No winner!"
+      end
+    end
     puts "Would you like to player again? (Y)es or (N)o"
     play_again = gets.chomp
   end while play_again == 'y'
- end
+end
+
+
+
 
 
 
@@ -398,7 +456,7 @@ def list_hands
 end
 
 def show_cards
-  binding.pry
+
   puts "#{@player} has:"
   @player.hand.to_s
 
@@ -440,26 +498,27 @@ end
 
 
 
-  def dealer_turn
-    if @dealer.hand.total_card_value == 21
-      puts "Dealer has Blackjack!"
-    end
-    while @dealer.hand.total_card_value < 17
-      puts "The dealer hits!"
-      puts " "
-      @dealer.hand.add_card(@dealer.deal)
-      @dealer.hand.to_s
-      if @dealer.hand.total_card_value == 21
-        puts "Dealer has Blackjack!  You lose."
-        puts " "
-        break
-      elsif  @dealer.hand.total_card_value > 21
-       puts "Dealer has busted! You win."
-       puts " "
-       break
-      end
-      puts "The dealer stays. "
-     end
-    end
+  # def dealer_turn
+  #   if @dealer.hand.total_card_value == 21
+  #     puts "Dealer has Blackjack!"
+  #   end
+  #   while @dealer.hand.total_card_value < 17
+  #     puts "The dealer hits!"
+  #     puts " "
+  #     @dealer.hand.add_card(@dealer.deal)
+  #     @dealer.hand.to_s
+  #     sleep(2)
+  #     if @dealer.hand.total_card_value == 21
+  #       puts "Dealer has Blackjack!  You lose."
+  #       puts " "
+  #       break
+  #     elsif  @dealer.hand.total_card_value > 21
+  #      puts "Dealer has busted! You win."
+  #      puts " "
+  #      break
+  #     end
+  #     puts "The dealer stays. "
+  #    end
+  #   end
 
 new_game = Game.new.play
