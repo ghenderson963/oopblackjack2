@@ -33,6 +33,7 @@ class Deck
       puts "Card number #{count} is a #{card.rank} of #{card.suit} "
     end
   end
+
 end
 
 
@@ -54,11 +55,11 @@ module Hand
       end
     end
     total
-end
+  end
 
   def list_hand
     hand_total = 0
-   cards.each do |card|
+    cards.each do |card|
       puts "#{card.rank} of #{card.suit}"
     end
     hand_total += total_card_value
@@ -68,6 +69,7 @@ end
   def remove_cards
     @cards = []
   end
+
 end
 
 class Card
@@ -92,6 +94,7 @@ class Card
   def to_s
     puts "a #{@rank} of #{@suit}"
   end
+
 end
 
 class Player
@@ -125,6 +128,7 @@ class Player
   def to_s
     name
   end
+
 end
 
 class Dealer < Player
@@ -220,7 +224,6 @@ def initial_deal
     @dealer.add_card(@dealer.deal)
   end
 end
-
 
 def switch_players
   if @count < @hash_of_players.length
@@ -325,27 +328,25 @@ def dealers_turn
   end
 end
 
-
-    def find_winners
-       @hash_of_players.each do |_,player|
-          if player.total_card_value > 21
-          player.settle_bet(FALSE)
-          puts "#{player} Busted! #{player} loses"
-        elsif @dealer.total_card_value > 21
-          player.settle_bet("win")
-          puts "#{player} you win!  The dealer busted!"
-        elsif player.total_card_value > @dealer.total_card_value
-          player.settle_bet("win")
-          puts "#{player} you win!"
-        elsif player.total_card_value < @dealer.total_card_value
-          player.settle_bet(FALSE)
-          puts "#{player} you lose!"
-        elsif player.total_card_value == @dealer.total_card_value
-          player.settle_bet("win")
-          puts "#{player} you and the dealer tied!  No winner!"
-        end
-      end
+def find_winners
+  @hash_of_players.each do |_,player|
+    if player.total_card_value > 21
+      player.settle_bet(FALSE)
+      puts "#{player} Busted! #{player} loses"
+    elsif @dealer.total_card_value > 21
+      player.settle_bet("win")
+      puts "#{player} you win!  The dealer busted!"
+    elsif player.total_card_value > @dealer.total_card_value
+      player.settle_bet("win")
+      puts "#{player} you win!"
+    elsif player.total_card_value < @dealer.total_card_value
+      player.settle_bet(FALSE)
+      puts "#{player} you lose!"
+    elsif player.total_card_value == @dealer.total_card_value
+      player.settle_bet("win")
+      puts "#{player} you and the dealer tied!  No winner!"
     end
-
+  end
+end
 
 new_game = Game.new.play
