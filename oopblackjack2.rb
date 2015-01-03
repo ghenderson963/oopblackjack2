@@ -71,7 +71,8 @@ end
   end
 
   def remove_cards
-    cards = []
+    @cards = []
+    binding.pry
   end
 end
 
@@ -79,23 +80,23 @@ class Card
   attr_accessor :rank, :suit, :value
 
   def initialize(suit, rank)
-  self.suit = suit
-  self.rank = rank
-  self.value = value(rank)
+  @suit = suit
+  @rank = rank
+  @value = value(rank)
   end
 
   def value(rank)
     if rank == "ace"
-      self.value = 11
+      @value = 11
     elsif rank.to_i == 0
-      self.value = 10
+      @value = 10
     else
-      self.value = rank
+      @value = rank
     end
   end
 
   def to_s
-    puts "a #{self.rank} of #{self.suit}"
+    puts "a #{@rank} of #{@suit}"
   end
 end
 
@@ -105,12 +106,12 @@ class Player
   attr_accessor :name, :hand, :bet, :wallet, :current_bet, :cards
 
   def initialize
-    self.name = name
-    # self.hand = Hand.new
+    @name = name
+    # @hand = Hand.new
     @cards = []
-    self.wallet = Wallet.new
-    self.bet = 0
-    self.current_bet = 0
+    @wallet = Wallet.new
+    @bet = 0
+    @current_bet = 0
   end
 
   def make_bet(bet)
@@ -118,14 +119,14 @@ class Player
   end
 
   def total_cash
-    self.wallet.total_cash
+    @wallet.total_cash
   end
 
   def settle_bet(win)
     if win == "win"
-      self.wallet.total_cash = self.wallet.total_cash + self.wallet.current_bet
+      @wallet.total_cash = @wallet.total_cash + @wallet.current_bet
     else
-      self.wallet.total_cash = self.wallet.total_cash - self.wallet.current_bet
+      @wallet.total_cash = @wallet.total_cash - @wallet.current_bet
     end
   end
 
@@ -141,18 +142,17 @@ class Dealer < Player
 
   def build_decks
     puts "Building and shuffling decks."
-    count = 1
-    self.total_deck = Deck.new
+    @total_deck = Deck.new
   end
 
   def scramble
-    self.total_deck.shuffle!
-    self.total_deck.reverse!
-    self.total_deck.shuffle!
+    @total_deck.shuffle!
+    @total_deck.reverse!
+    @total_deck.shuffle!
   end
 
   def deal
-   self.total_deck.deck_of_cards.pop
+   @total_deck.deck_of_cards.pop
   end
 end
 
@@ -161,8 +161,8 @@ class Wallet
   attr_accessor :total_cash, :current_bet
 
   def initialize
-    self.total_cash = 2500
-    self.current_bet = 0
+    @total_cash = 2500
+    @current_bet = 0
   end
 
   def to_s
@@ -184,20 +184,14 @@ def play
 
   begin
     system "clear"
-    @count = 0
     @dealer.build_decks
     @dealer.total_deck.scramble
     puts " "
     puts "Let's play Blackjack!"
     puts " "
-    @hash_of_players.each { |_,player| place_bet(player)}
-    @hash_of_players.each { |_,player| player.remove_cards }
-
-    @dealer.remove_cards
-    2.times do
-      @hash_of_players.each { |_,player| player.add_card(@dealer.deal) }
-      @dealer.add_card(@dealer.deal)
-    end
+    place_bets
+    clean_up_cards
+    initial_deal
     system "clear"
     puts "#{@hash_of_players[0]} is first."
     @player = @hash_of_players[0]
@@ -212,46 +206,30 @@ def play
       switch_players
     end
     system "clear"
-    puts "Dealers turn!"
-    puts "Dealer has:"
-    @dealer.list_hand
-    puts " "
-    if @dealer.total_card_value == 21
-      puts "Dealer has Blackjack!"
-      puts " "
-    end
-    while @dealer.total_card_value < 17
-      puts "The dealer hits!"
-      @dealer.add_card(@dealer.deal)
-      sleep(1)
-      puts "The dealer gets:"
-      @dealer.cards.last.to_s
-      puts "For a total of #{@dealer.total_card_value}"
-      puts " "
-      sleep(2)
-    end
-    @hash_of_players.each do |_,player|
-      if player.total_card_value > 21
-        player.settle_bet(FALSE)
-        puts "#{player} Busted! #{player} loses"
-      elsif @dealer.total_card_value > 21
-        player.settle_bet("win")
-        puts "#{player} you win!  The dealer busted!"
-      elsif player.total_card_value > @dealer.total_card_value
-        player.settle_bet("win")
-        puts "#{player} you win!"
-      elsif player.total_card_value < @dealer.total_card_value
-        player.settle_bet(FALSE)
-        puts "#{player} you lose!"
-      elsif player.hand.total_card_value == @dealer.total_card_value
-        player.settle_bet("win")
-        puts "#{player} you and the dealer tied!  No winner!"
-      end
-    end
+    dealers_turn
+    find_winners
     puts "Would you like to player again? (Y)es or (N)o"
     play_again = gets.chomp
   end while play_again == 'y'
 end
+
+def place_bets
+@hash_of_players.each { |_,player| place_bet(player)}
+end
+
+def clean_up_cards
+  binding.pry
+  @hash_of_players.each { |_,player| player.remove_cards }
+  @dealer.remove_cards
+end
+
+def initial_deal
+  2.times do
+    @hash_of_players.each { |_,player| player.add_card(@dealer.deal) }
+    @dealer.add_card(@dealer.deal)
+  end
+end
+
 
 def switch_players
   if @count < @hash_of_players.length
@@ -331,6 +309,53 @@ def place_bet(player)
     bet_amount = gets.chomp.to_i
   end while bet_amount > player.total_cash
    player.make_bet(bet_amount)
+end
+
+def dealers_turn
+  system "clear"
+    puts "Dealers turn!"
+    puts "Dealer has:"
+    @dealer.list_hand
+    puts " "
+    if @dealer.total_card_value == 21
+      puts "Dealer has Blackjack!"
+      puts " "
+    end
+    while @dealer.total_card_value < 17
+      puts "The dealer hits!"
+      @dealer.add_card(@dealer.deal)
+      sleep(1)
+      puts "The dealer gets:"
+      @dealer.cards.last.to_s
+      puts "For a total of #{@dealer.total_card_value}"
+      puts " "
+      sleep(2)
+    end
+
+    def find_winners
+
+       @hash_of_players.each do |_,player|
+      if player.total_card_value > 21
+        player.settle_bet(FALSE)
+        puts "#{player} Busted! #{player} loses"
+      elsif @dealer.total_card_value > 21
+        player.settle_bet("win")
+        puts "#{player} you win!  The dealer busted!"
+      elsif player.total_card_value > @dealer.total_card_value
+        player.settle_bet("win")
+        puts "#{player} you win!"
+      elsif player.total_card_value < @dealer.total_card_value
+        player.settle_bet(FALSE)
+        puts "#{player} you lose!"
+      elsif player.hand.total_card_value == @dealer.total_card_value
+        player.settle_bet("win")
+        puts "#{player} you and the dealer tied!  No winner!"
+      end
+    end
+
+
+    end
+
 end
 
 new_game = Game.new.play
