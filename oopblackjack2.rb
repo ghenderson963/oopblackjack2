@@ -35,24 +35,25 @@ class Deck
   end
 end
 
-class Hand
+
+module Hand
   attr_accessor :hand_array
 
-  def initialize
-    self.hand_array = []
-    @number_of_cards = @hand_array.count
-  end
+  # def initialize
+  #   self.hand_array = []
+  #   @number_of_cards = @hand_array.count
+  # end
 
   def add_card(card)
-    self.hand_array.push(card)
+    self.cards.push(card)
   end
 
   def total_card_value
     total = 0
-    self.hand_array.each do |card|
+    cards.each do |card|
       total += card.value(card.rank).to_i
     end
-    self.hand_array.select { |card| card.value(card.rank) == 11 }.count.times do
+   cards.select { |card| card.value(card.rank) == 11 }.count.times do
       if total > 21
         total -= 10
       end
@@ -60,9 +61,9 @@ class Hand
     total
 end
 
-  def to_s
+  def list_hand
     hand_total = 0
-    self.hand_array.each do |card|
+   cards.each do |card|
       puts "#{card.rank} of #{card.suit}"
     end
     hand_total += total_card_value
@@ -70,7 +71,7 @@ end
   end
 
   def remove_cards
-    self.hand_array = []
+    cards = []
   end
 end
 
@@ -99,11 +100,14 @@ class Card
 end
 
 class Player
-  attr_accessor :name, :hand, :bet, :wallet, :current_bet
+  include Hand
+
+  attr_accessor :name, :hand, :bet, :wallet, :current_bet, :cards
 
   def initialize
     self.name = name
-    self.hand = Hand.new
+    # self.hand = Hand.new
+    @cards = []
     self.wallet = Wallet.new
     self.bet = 0
     self.current_bet = 0
@@ -131,6 +135,8 @@ class Player
 end
 
 class Dealer < Player
+  include Hand
+
   attr_accessor :total_deck
 
   def build_decks
@@ -185,11 +191,12 @@ def play
     puts "Let's play Blackjack!"
     puts " "
     @hash_of_players.each { |_,player| place_bet(player)}
-    @hash_of_players.each { |_,player| player.hand.remove_cards }
-    @dealer.hand.remove_cards
+    @hash_of_players.each { |_,player| player.remove_cards }
+
+    @dealer.remove_cards
     2.times do
-      @hash_of_players.each { |_,player| player.hand.add_card(@dealer.deal) }
-      @dealer.hand.add_card(@dealer.deal)
+      @hash_of_players.each { |_,player| player.add_card(@dealer.deal) }
+      @dealer.add_card(@dealer.deal)
     end
     system "clear"
     puts "#{@hash_of_players[0]} is first."
@@ -207,36 +214,36 @@ def play
     system "clear"
     puts "Dealers turn!"
     puts "Dealer has:"
-    @dealer.hand.to_s
+    @dealer.list_hand
     puts " "
-    if @dealer.hand.total_card_value == 21
+    if @dealer.total_card_value == 21
       puts "Dealer has Blackjack!"
       puts " "
     end
-    while @dealer.hand.total_card_value < 17
+    while @dealer.total_card_value < 17
       puts "The dealer hits!"
-      @dealer.hand.add_card(@dealer.deal)
+      @dealer.add_card(@dealer.deal)
       sleep(1)
       puts "The dealer gets:"
-      @dealer.hand.hand_array.last.to_s
-      puts "For a total of #{@dealer.hand.total_card_value}"
+      @dealer.cards.last.to_s
+      puts "For a total of #{@dealer.total_card_value}"
       puts " "
       sleep(2)
     end
     @hash_of_players.each do |_,player|
-      if player.hand.total_card_value > 21
+      if player.total_card_value > 21
         player.settle_bet(FALSE)
         puts "#{player} Busted! #{player} loses"
-      elsif @dealer.hand.total_card_value > 21
+      elsif @dealer.total_card_value > 21
         player.settle_bet("win")
         puts "#{player} you win!  The dealer busted!"
-      elsif player.hand.total_card_value > @dealer.hand.total_card_value
+      elsif player.total_card_value > @dealer.total_card_value
         player.settle_bet("win")
         puts "#{player} you win!"
-      elsif player.hand.total_card_value < @dealer.hand.total_card_value
+      elsif player.total_card_value < @dealer.total_card_value
         player.settle_bet(FALSE)
         puts "#{player} you lose!"
-      elsif player.hand.total_card_value == @dealer.hand.total_card_value
+      elsif player.hand.total_card_value == @dealer.total_card_value
         player.settle_bet("win")
         puts "#{player} you and the dealer tied!  No winner!"
       end
@@ -254,7 +261,7 @@ def switch_players
 end
 
 def hit_or_stay
-  while @player.hand.total_card_value < 21
+  while @player.total_card_value < 21
     puts "Would you like a HIT or would you like to STAY #{@player}?"
     puts "Use the keyboard to type (H) for HIT or (S) to stay"
     answer = gets.chomp.downcase
@@ -267,15 +274,15 @@ def hit_or_stay
       puts " "
       break
     end
-    @player.hand.add_card(@dealer.deal)
-    if @player.hand.total_card_value == 21
+    @player.add_card(@dealer.deal)
+    if @player.total_card_value == 21
       puts "Blackjack! #{@player} wins!"
       sleep(3)
       show_cards
       @player.settle_bet("win")
       puts " "
       break
-    elsif @player.hand.total_card_value > 21
+    elsif @player.total_card_value > 21
       puts "Busted! #{@player} looses!"
       show_cards
       puts " "
@@ -290,11 +297,11 @@ end
 
 def show_cards
   puts "#{@player} has:"
-  @player.hand.to_s
+  @player.list_hand
   @player.wallet.to_s
   puts " "
   puts "The dealer has:"
-  @dealer.hand.to_s
+  @dealer.list_hand
   puts " "
 end
 
