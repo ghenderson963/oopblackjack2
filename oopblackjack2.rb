@@ -4,35 +4,31 @@ class Deck
   attr_accessor :deck_of_cards
 
   def initialize
-    self.deck_of_cards = []
-    suit = ["spades", "diamonds", "clubs", "hearts"]
-    rank = ['2','3','4','5','6','7','8','9','jack','queen','king','ace']
-    array_of_suit_rank_pairs = []
-    array_of_suit_rank_pairs = suit.product(rank)
-    count = 0
-    array_of_suit_rank_pairs.each do |array|
-      self.deck_of_cards[count] = Card.new(array[0],array[1])
-      count = count + 1
+    @deck_of_cards = []
+    ["spades", "diamonds", "clubs", "hearts"].each do |suit|
+      ['2','3','4','5','6','7','8','9','jack','queen','king','ace'].each do |rank|
+        @deck_of_cards << Card.new(suit,rank)
+      end
     end
   end
 
   def scramble
-    self.deck_of_cards.shuffle!
-    self.deck_of_cards.reverse!
-    self.deck_of_cards.shuffle!
+    @deck_of_cards.shuffle!
+    @deck_of_cards.reverse!
+    @deck_of_cards.shuffle!
   end
 
   def deal
-   self.deck_of_cards.deck_of_cards.pop
+   @deck_of_cards.pop
   end
 
   def add_card(card_to_add)
-    self.deck_of_cards << card_to_add
+    @deck_of_cards << card_to_add
   end
 
   def to_s
     count = 0
-    self.deck_of_cards.each do |card|
+    @deck_of_cards.each do |card|
       count = count + 1
       puts "Card number #{count} is a #{card.rank} of #{card.suit} "
     end
