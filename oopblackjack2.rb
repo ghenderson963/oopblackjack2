@@ -181,7 +181,6 @@ class Game
 
   def switch_players
     if self.number < hash_of_players.length
-      binding.pry
       number = self.number + 1
       @player = hash_of_players[number]
     end
@@ -224,7 +223,16 @@ class Game
   end
 
   def place_bets
-    hash_of_players.each { |_,player| place_bet(player)}
+    hash_of_players.each do  |_,player|
+      bet_amount = 0
+      begin
+        puts "You have #{player.total_cash}"
+        puts "How much would you like to bet #{player}?"
+        puts " "
+        bet_amount = gets.chomp.to_i
+     end while bet_amount > player.total_cash
+     player.make_bet(bet_amount)
+    end
   end
 
   def clean_up_card
@@ -300,16 +308,6 @@ class Game
     hash_of_players.delete_if{ |key, value| key == "#{@player}"}
   end
 
-  def place_bet(player)
-    bet_amount = 0
-    begin
-      puts "You have #{player.total_cash}"
-      puts "How much would you like to bet #{player}?"
-      puts " "
-      bet_amount = gets.chomp.to_i
-    end while bet_amount > player.total_cash
-    player.make_bet(bet_amount)
-  end
 
   def dealers_turn
     system "clear"
