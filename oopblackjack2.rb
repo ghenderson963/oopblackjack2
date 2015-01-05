@@ -48,7 +48,7 @@ module Hand
     cards.each do |card|
       total += card.value(card.rank).to_i
     end
-   cards.select { |card| card.value(card.rank) == 11 }.count.times do
+    cards.select { |card| card.value(card.rank) == 11 }.count.times do
       if total > 21
         total -= 10
       end
@@ -87,16 +87,16 @@ class Card
 
   def value(rank)
     if rank == "ace"
-      @value = 11
+      self.value = 11
     elsif rank.to_i == 0
-      @value = 10
+      self.value = 10
     else
-      @value = rank
+      self.value = rank
     end
   end
 
   def to_s
-    puts "a #{@rank} of #{@suit}"
+    puts "a #{rank} of #{suit}"
   end
 
 end
@@ -141,11 +141,11 @@ class Dealer < Player
 
   def build_decks
     puts "Building and shuffling decks."
-    @total_deck = Deck.new
+    self.total_deck = Deck.new
   end
 
   def deal
-   @total_deck.deck_of_cards.pop
+   total_deck.deck_of_cards.pop
   end
 
 end
@@ -185,7 +185,7 @@ class Game
   def players_turn
     system "clear"
     puts "#{@hash_of_players[0]} is first."
-    @player = hash_of_players[0]
+    self.player = hash_of_players[0]
     hash_of_players.each do |_,player|
       system "clear"
       show_cards
@@ -283,8 +283,8 @@ class Game
 
   def show_cards
     puts "#{@player} has:"
-    @player.list_hand
-    @player.wallet.to_s
+    player.list_hand
+    player.wallet.to_s
     puts " "
     puts "The dealer has:"
     dealer.show_flop
