@@ -12,23 +12,23 @@ class Deck
     end
   end
 
-  def scramble
-    @deck_of_cards.shuffle!
-    @deck_of_cards.reverse!
-    @deck_of_cards.shuffle!
+   def scramble!
+     deck_of_cards.shuffle!
+     deck_of_cards.reverse!
+     deck_of_cards.shuffle!
   end
 
   def deal
-   @deck_of_cards.pop
+   deck_of_cards.pop
   end
 
   def add_card(card_to_add)
-    @deck_of_cards << card_to_add
+    deck_of_cards << card_to_add
   end
 
   def to_s
     i = 0
-    @deck_of_cards.each do |card|
+    deck_of_cards.each do |card|
       i = i + 1
       puts "Card number #{i} is a #{card.rank} of #{card.suit} "
     end
@@ -38,7 +38,6 @@ end
 
 
 module Hand
-  attr_accessor :hand_array
 
   def add_card(card)
     self.cards.push(card)
@@ -63,7 +62,12 @@ module Hand
       puts "#{card.rank} of #{card.suit}"
     end
     hand_total += total_card_value
-    puts "for a total of #{hand_total}"
+    puts "==>For a total of #{hand_total}"
+  end
+
+  def show_flop
+    puts "First card hidden."
+    puts "#{cards[1].rank} of #{cards[1].suit}"
   end
 
   def remove_cards
@@ -100,28 +104,27 @@ end
 class Player
   include Hand
 
-  attr_accessor :name, :hand, :bet, :wallet, :cards
+  attr_accessor :name, :wallet, :cards
 
   def initialize
     @name = name
     @cards = []
     @wallet = Wallet.new
-    @bet = 0
   end
 
   def make_bet(bet)
-    self.wallet.current_bet = bet
+    wallet.current_bet = bet
   end
 
   def total_cash
-    @wallet.total_cash
+    wallet.total_cash
   end
 
   def settle_bet(win)
     if win == "win"
-      @wallet.total_cash = @wallet.total_cash + @wallet.current_bet
+      wallet.total_cash = wallet.total_cash + wallet.current_bet
     else
-      @wallet.total_cash = @wallet.total_cash - @wallet.current_bet
+      wallet.total_cash = wallet.total_cash - wallet.current_bet
     end
   end
 
@@ -141,17 +144,11 @@ class Dealer < Player
     @total_deck = Deck.new
   end
 
-  def scramble
-    @total_deck.shuffle!
-    @total_deck.reverse!
-    @total_deck.shuffle!
-  end
-
   def deal
    @total_deck.deck_of_cards.pop
   end
-end
 
+end
 
 class Wallet
   attr_accessor :total_cash, :current_bet
@@ -169,20 +166,35 @@ class Wallet
 end
 
 class Game
-  attr_accessor :dealer, :hash_of_players, :count, :player, :number
+  attr_accessor :dealer, :hash_of_players, :count, :player
 
 
   def initialize
     @hash_of_players = {}
     @dealer = Dealer.new
     @count = 0
-    @number = 0
   end
 
   def switch_players
-    if self.number < hash_of_players.length
-      number = self.number + 1
-      @player = hash_of_players[number]
+    if count < hash_of_players.length
+      self.count = count + 1
+      self.player = hash_of_players[count]
+    end
+  end
+
+  def players_turn
+    system "clear"
+    puts "#{@hash_of_players[0]} is first."
+    @player = hash_of_players[0]
+    hash_of_players.each do |_,player|
+      system "clear"
+      show_cards
+      hit_or_stay
+      system "clear"
+      show_cards
+      puts "Hit Enter or Return to proceed"
+      choice = gets.chomp
+      switch_players
     end
   end
 
@@ -193,39 +205,27 @@ class Game
     begin
       system "clear"
       dealer.build_decks
-      dealer.total_deck.scramble
+      dealer.total_deck.scramble!
       puts " "
       puts "Let's play Blackjack!"
       puts " "
       place_bets
       clean_up_card
       initial_deal
-      system "clear"
-      puts "#{@hash_of_players[0]} is first."
-      @player = hash_of_players[0]
-      hash_of_players.each do |_,player|
-        system "clear"
-        show_cards
-        hit_or_stay
-        system "clear"
-        show_cards
-        puts "Hit Enter or Return to proceed"
-        choice = gets.chomp
-        switch_players
-      end
+      players_turn
       system "clear"
       dealers_turn
       find_winners
       puts "Would you like to player again? (Y)es or (N)o"
       play_again = gets.chomp
     end while play_again == 'y'
-
   end
 
   def place_bets
     hash_of_players.each do  |_,player|
       bet_amount = 0
       begin
+        system "clear"
         puts "You have #{player.total_cash}"
         puts "How much would you like to bet #{player}?"
         puts " "
@@ -287,7 +287,7 @@ class Game
     @player.wallet.to_s
     puts " "
     puts "The dealer has:"
-    dealer.list_hand
+    dealer.show_flop
     puts " "
   end
 
@@ -307,7 +307,6 @@ class Game
   def remove_player
     hash_of_players.delete_if{ |key, value| key == "#{@player}"}
   end
-
 
   def dealers_turn
     system "clear"
